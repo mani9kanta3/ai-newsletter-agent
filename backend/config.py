@@ -8,5 +8,6 @@ load_dotenv(ROOT / '.env')
 
 API_KEY = os.getenv('GOOGLE_API_KEY', '')
 MODEL = os.getenv('GEMINI_MODEL', 'gemini-3.1-flash-lite')
+FALLBACK_MODEL = os.getenv('GEMINI_FALLBACK_MODEL', 'gemini-2.5-flash')
 OUTPUT = ROOT / 'output'
 OUTPUT.mkdir(exist_ok=True)

@@ -43,3 +43,37 @@ def test_provider_errors_are_clear_and_do_not_expose_keys(monkeypatch, status, e
         ai.ask_gemini('Review this draft', {}, Review)
     assert expected in str(error.value)
     assert 'private-test-key' not in str(error.value)
+
+
+def test_busy_model_backs_off_then_falls_back(monkeypatch):
+    valid = {'passed': True, 'summary': 'The source claims are supported.', 'issues': []}
+    urls, waits = [], []
+
+    def post(url, **kwargs):
+        urls.append(url)
+        return Response(200, json.dumps(valid)) if 'fallback-model' in url else Response(503)
+
+    monkeypatch.setattr(ai, 'API_KEY', 'test-key')
+    monkeypatch.setattr(ai, 'MODEL', 'main-model')
+    monkeypatch.setattr(ai, 'FALLBACK_MODEL', 'fallback-model')
+    monkeypatch.setattr(ai.requests, 'post', post)
+    monkeypatch.setattr(ai.time, 'sleep', waits.append)
+    assert ai.ask_gemini('Review this draft', {}, Review) == valid
+    assert sum('main-model' in url for url in urls) == 4
+    assert waits == [2, 4, 8]
+    assert 'fallback-model' in urls[-1]
+
+
+def test_quota_error_does_not_retry_or_fall_back(monkeypatch):
+    calls = []
+
+    def post(url, **kwargs):
+        calls.append(url)
+        return Response(429)
+
+    monkeypatch.setattr(ai, 'API_KEY', 'test-key')
+    monkeypatch.setattr(ai, 'FALLBACK_MODEL', 'fallback-model')
+    monkeypatch.setattr(ai.requests, 'post', post)
+    with pytest.raises(RuntimeError, match='usage limit'):
+        ai.ask_gemini('Review this draft', {}, Review)
+    assert len(calls) == 1

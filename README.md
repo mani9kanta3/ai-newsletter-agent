@@ -19,6 +19,8 @@ GOOGLE_API_KEY=your_key_here
 
 The API key stays on the backend. Never commit `.env` or share it. `.env.example` is safe to share. The default model is `gemini-3.1-flash-lite`. An optional `GEMINI_MODEL` setting changes the model. Gemini 3 models use low thinking level; Gemini 2.5 models use a 1024-token thinking budget. The model must support structured JSON output and be available to your account.
 
+If Google reports the model as overloaded (HTTP 5xx), each call retries after 2, 4 and 8 seconds, then switches to `GEMINI_FALLBACK_MODEL` (default `gemini-2.5-flash`). Quota (429) and key errors stop immediately, because retrying cannot fix them.
+
 ## Use the app
 
 Enter a goal such as:
@@ -130,7 +132,7 @@ Vite proxies `/api` to the backend. After changing React code, run `npm.cmd run 
 .\.venv\Scripts\python.exe -m pytest -q
 ```
 
-The 15 tests use controlled news and AI responses, so they do not consume API quota. They exercise the real LangGraph graph and SQLite checkpoints, including autonomous revision, human revision and approval, cancellation, rejected drafts, source filtering, HTML escaping, protected downloads, invalid AI responses, and provider errors.
+The 17 tests use controlled news and AI responses, so they do not consume API quota. They exercise the real LangGraph graph and SQLite checkpoints, including autonomous revision, human revision and approval, cancellation, rejected drafts, source filtering, HTML escaping, protected downloads, invalid AI responses, provider errors, and busy-model backoff with fallback.
 
 ## Limits
 
