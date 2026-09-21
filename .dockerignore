@@ -1,0 +1,11 @@
+.env
+.venv
+.git
+.pytest_cache
+__pycache__
+output
+tmp
+tests
+frontend/node_modules
+frontend/dist
+*.pdf
