@@ -40,7 +40,15 @@ export default function App() {
   useEffect(() => {
     dispatch(loadRuns())
     const saved = localStorage.getItem('newsletter-run')
-    if (saved) dispatch(openRun(saved))
+    // A remembered issue can disappear when the server's storage is reset (for example after a redeploy).
+    if (saved) {
+      dispatch(openRun(saved))
+        .unwrap()
+        .catch(() => {
+          localStorage.removeItem('newsletter-run')
+          dispatch(newNewsletter())
+        })
+    }
     apiRequest('/health')
       .then(setHealth)
       .catch(() => setHealth({ configured: false }))

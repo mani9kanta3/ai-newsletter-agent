@@ -140,6 +140,7 @@ The 17 tests use controlled news and AI responses, so they do not consume API qu
 - Public news search and publishers can block requests. Excerpt-based summaries are labeled. If fewer than five suitable sources can be read, the run stops rather than inventing stories.
 - AI review reduces errors but does not guarantee factual accuracy. Source links are included for checking.
 - The seven-day window uses source publication timestamps, which are not independently verified. An article may discuss an older event; the agent should not present that event as newly occurring.
+- On the free Render deployment, saved issues and approval pauses are cleared whenever the service redeploys or restarts, because the disk is not persistent. Locally they persist.
 - This is a local, single-user assignment app. Run one backend process. It processes one newsletter at a time and has no login or production deployment configuration.
 - A server stop during active generation marks that run interrupted at next startup. Start a new run. Drafts already waiting for human approval can still be resumed.
 - Weekly describes the research window. The app does not schedule recurring runs or send real emails.
