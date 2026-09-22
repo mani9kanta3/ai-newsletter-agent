@@ -70,8 +70,15 @@ def research_step(state):
         raise RuntimeError('The AI selected invalid or repeated sources. Please run the agent again.')
     selected = [next(source for source in sources if source['id'] == source_id) for source_id in ids]
     add_event(run_id, 'Researching', selection['reason'])
+    # Paywalls and bot blocks make some picks unreadable. Backups are the unused search results, in search order,
+    # and are only read when the AI's picks alone leave fewer than 5 readable sources.
+    backups = [source for source in sources if source['id'] not in set(ids)]
     readable = []
-    for source in selected:
+    for source in selected + backups:
+        if source in backups and len(readable) >= 5:
+            break
+        if source in backups:
+            add_event(run_id, 'Reading sources', 'Replacing an unreadable pick with another recent article.')
         add_event(run_id, 'Reading sources', source['title'], 'Article reader')
         source['content'] = read_article(source['url'])
         if len(source['content']) >= 300:

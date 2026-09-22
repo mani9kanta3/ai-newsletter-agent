@@ -181,3 +181,18 @@ def test_api_protects_approval_and_downloads(workspace, fake_tools, monkeypatch)
     assert client.get(f'/api/runs/{run_id}/files/newsletter.html').status_code == 200
     assert client.get(f'/api/runs/{run_id}/files/run.json').status_code == 404
     assert client.post(f'/api/runs/{run_id}/decision', json={'action': 'approve'}).status_code == 409
+
+
+def test_unreadable_picks_are_replaced_from_unused_results(workspace, fake_tools, monkeypatch):
+    calls, draft, sources = fake_tools
+    extra = copy.deepcopy(sources)
+    for index, source in enumerate(extra, 6):
+        source.update(id=index, title=f'Agent development {index}', url=f'https://example.com/news/{index}')
+    everything = copy.deepcopy(sources) + extra
+    for source in everything[:2]:
+        source['excerpt'] = 'Too short.'
+    monkeypatch.setattr(agent, 'search_news', lambda queries: (copy.deepcopy(everything), []))
+    state = {'run_id': storage.new_run('Weekly AI agent news', 'autonomous')['id'], 'goal': 'Weekly AI agent news',
+             'plan': {'queries': ['AI agents'], 'topic': 'AI agents'}}
+    result = agent.research_step(state)
+    assert [source['id'] for source in result['sources']] == [3, 4, 5, 6, 7]

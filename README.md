@@ -52,7 +52,7 @@ Goal → Plan → Search and read sources → Write → Review
 
 The LangGraph graph calls a Gemini planner, public news search, source selector, article reader, summarizer, critic, HTML generator, and file delivery tool. These are plain Python functions to keep the code easy to follow.
 
-The planner creates search queries from the goal. The research step selects 5–7 articles from the preceding seven days, removes repeated titles and URLs, checks dates, and reads available article text. Thin unreadable sources are skipped. The writing step uses only gathered evidence. The critic checks the result and can send it back for up to two automatic revisions. A draft that still fails review stops without saving delivery files.
+The planner creates search queries from the goal. The research step selects 5–7 articles from the preceding seven days, removes repeated titles and URLs, checks dates, and reads available article text. Thin unreadable sources are skipped and replaced with the next unused search results, so a few paywalled picks do not stop the run. The writing step uses only gathered evidence. The critic checks the result and can send it back for up to two automatic revisions. A draft that still fails review stops without saving delivery files.
 
 ## One-function usage
 
@@ -132,7 +132,7 @@ Vite proxies `/api` to the backend. After changing React code, run `npm.cmd run 
 .\.venv\Scripts\python.exe -m pytest -q
 ```
 
-The 17 tests use controlled news and AI responses, so they do not consume API quota. They exercise the real LangGraph graph and SQLite checkpoints, including autonomous revision, human revision and approval, cancellation, rejected drafts, source filtering, HTML escaping, protected downloads, invalid AI responses, provider errors, and busy-model backoff with fallback.
+The 18 tests use controlled news and AI responses, so they do not consume API quota. They exercise the real LangGraph graph and SQLite checkpoints, including autonomous revision, human revision and approval, cancellation, rejected drafts, source filtering, HTML escaping, protected downloads, invalid AI responses, provider errors, busy-model backoff with fallback, and replacing unreadable sources.
 
 ## Limits
 
